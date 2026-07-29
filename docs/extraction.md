@@ -1,0 +1,15 @@
+# Étape 1 : Extraction de métadonnées
+
+La première étape du pipeline correspond à la récupération de métadonnées qui accompagnent les nouvelles publications du portail HAL Inria. La récupération de métadonnées est effectuée quotidiennement à l'aide de l'API du HAL avec l'URL présenté ci-dessous. Par défaut, les résultats sont affichés en format JSON. 
+
+https://api.archives-ouvertes.fr/search/?q=collCode_s:<span style="color:red">{coll_name}</span>&fq=submittedDate_tdate:<span style="color:red">{datefield}</span>&fl=<span style="color:red">{",".join(fields)}</span>&rows=100&sort=docid%20asc&cursorMark=<span style="color:red">{cursor}</span>
+
+Les paramètres fictifs du URL sont substitués par les valeurs suivantes : 
+
+* ```coll_name="INRIA"``` : Le champ coll_name précise que les publications à récupérer sont celles qui sont incluses dans la collection INRIA. Cette collection alimente le portail HAL Inria, mais toutes les publications de la collection n'apparaissent pas dans le portail HAL Inria. Ainsi, le pipeline traite également des publications qui ne sont pas présentes dans le portail HAL Inria. 
+* ```datefield = "[NOW-1DAY/DAY TO NOW/DAY]"``` : Par défaut, le pipeline récupère les publications qui ont été déposées la veille sur HAL. Conformément à la syntaxe de requêtes Solr Lucene, la veille est représentée comme un intervalle entre 00:00 du jour précédent et 00:00 du jour actuel. 
+* ```datefield = f"[{start} TO {end}]"``` : Le pipeline peut également traiter les publications déposées à un jour précis dans le passé. 
+* ```fields = ["docid", "label_s", "uri_s", "title_s", "en_title_s", "fr_title_s", "keyword_s", "en_keyword_s", "fr_keyword_s", "abstract_s", "en_abstract_s", "fr_abstract_s", "authIdFormPerson_s", "authIdForm_i", "authFullName_s", "submittedDate_tdate", "primaryDomain_s", "collCode_s",]``` : Le paramètre fields sert à définir les champs de métadonnées qui doivent être récupérés. Ces champs sont l'identifiant de la publication, le titre, l'URL, les titres anglais et français, les mots clés, les mots clés en anglais et en français, les résumés, les résumés en anglais et en français, les identifiants des auteurs, les noms des auteurs, la date de soumission, le domaine et les noms de collections auxquelles la publication est associée. 
+* ```cursor = "*"``` : Pour des raisons de performance, chaque requête peut récupérer jusqu'à 100 publications. S'il y a plus de 100 publications déposées au jour souhaité, celles-ci sont divisées en groupes de 100 publications maximum. Le champ cursorMark retourné par l'API indique la valeur qui doit être passée au champ cursor pour passer à la page suivante. 
+
+Les métadonnées récupérées sont enregistrées dans le fichier metadata/inria_{datestamp}.json, où datestamp indique la date de dépôt des publications.  

@@ -1,0 +1,10 @@
+site_name: My Docs
+theme: readthedocs
+nav:
+  - Introduction: index.md
+  - Présentation du pipeline: pipeline.md 
+  - Récupération de métadonnées: extraction.md
+  - Prétraitement: pretraitement.md
+  - Traduction: traduction.md
+  - Post-traitement: evaluation.md
+  - Notification: notification.md 
