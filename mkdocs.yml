@@ -1,5 +1,11 @@
 site_name: My Docs
-theme: readthedocs
+theme:
+  name: readthedocs
+  features:
+    - content.code.copy
+  icon: 
+    admonition:
+      <type>: <icon>
 nav:
   - Introduction: index.md
   - Présentation du pipeline: pipeline.md 
@@ -8,3 +14,19 @@ nav:
   - Traduction: traduction.md
   - Post-traitement: evaluation.md
   - Notification: notification.md 
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+      use_pygments: true
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+extra_css:
+  - stylesheets/extra.css
+
+
