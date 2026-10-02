@@ -1,4 +1,4 @@
-# Introduction 
+# Le projet ANR MaTOS 
 
 Le projet [ANR MaTOS](https://anr-matos.github.io/index.html) (Machine Translation for Open Science) mené par l'[ISIR](https://www.isir.upmc.fr/), l'[Inria](https://inria.fr/fr), l'[Université Paris-Cité](https://u-paris.fr/) et le [CNRS](https://www.cnrs.fr/fr), vise à développer de nouvelles méthodes pour la traduction automatique (TA) intégrale de documents scientifiques, ainsi que des métriques automatiques pour évaluer la qualité des traductions produites.
 

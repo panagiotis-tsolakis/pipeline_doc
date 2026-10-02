@@ -1,4 +1,4 @@
-site_name: My Docs
+site_name: MaTOS HAL pipeline 
 theme:
   name: readthedocs
   features:
@@ -7,12 +7,12 @@ theme:
     admonition:
       <type>: <icon>
 nav:
-  - Introduction: index.md
+  - Le projet ANR MaTOS: index.md
   - Présentation du pipeline: pipeline.md 
   - Récupération de métadonnées: extraction.md
   - Prétraitement: pretraitement.md
   - Traduction: traduction.md
-  - Post-traitement: evaluation.md
+  - Post-traitement: posttraitement.md
   - Notification: notification.md 
 markdown_extensions:
   - pymdownx.highlight:
@@ -28,5 +28,3 @@ markdown_extensions:
   - pymdownx.superfences
 extra_css:
   - stylesheets/extra.css
-
-

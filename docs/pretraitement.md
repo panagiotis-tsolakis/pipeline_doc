@@ -2,7 +2,7 @@
 
 L'étape de la pré-traduction contient la chaîne de prétraitements et filtrages qui sont réalisés afin d'aboutir à la liste de textes normalisés à traduire. 
 
-## Premier filtre : vérification des métadonnées 
+## Premier filtre : vérification de métadonnées 
 
 Le premier filtre appliqué concerne la présence de champs de résumés dans les métadonnées des publications récupérées. Les champs `en_abstract_s` et `fr_abstract_s` sont réservés aux résumés anglais et français respectivement et contiennent des listes où sont stockés les résumés. Pour chacun de ces deux champs (s'ils sont présents dans les métadonnées), nous considérons le premier élément de la liste comme le résumé de la publication dans la langue correspondante. Ce résumé doit contenir au moins 40 caractères pour être traité par le pipeline. 
 
@@ -17,6 +17,13 @@ En fonction des résumés disponibles, une publication est triée dans une des c
 
 Les publications ne disposant ni d'un résumé anglais ni d'un résumé français ne sont pas traitées par le pipeline. Les résumés dans des langues tierces ne sont pas pris en compte. Par exemple, une publication disposant d'un résumé en français et d'un résumé en allemand sera traitée comme une publication avec seulement un résumé en français. 
 
+La base de données *matos.duckdb* est interrogée avec la requête ci-dessous. Si l'identifiant d'une publication (*docid*) existe dans la base de données et que sont statut *notif_ready* est *true*, le résumé n'est pas traité par le pipeline. 
+
+<pre><code class="language-urlencoded">
+SELECT * FROM publications WHERE docid = <span style="color: blue;">123456</span> 
+ AND notif_ready = <span style="color: blue;">true</span>
+</code></pre>
+
 À la fin de ce filtrage, les résumés sont sauvegardés dans les dossiers `en/all` et `fr/all`. 
 
 ## Deuxième filtre : normalisation et identification de langue 
@@ -26,12 +33,15 @@ Les opérations de la deuxième phase de la pré-traduction ne portent plus sur 
 ## Normalisation 
 Les résumés sont normalisés indépendamment de leur langue. Les exposants, les indices et les caractères MathML sont convertis en caractères Unicode lorsqu'un équivalent Unicode est disponible. 
 
-Les balises HTML sont enlevées. Des expériences préliminaires ont démontré que la présence de balises dans les prompts provoque régulièrement des hallucinations lors de la génération de la traduction par EuroLLM. Toutefois, cela peut impacter des résumés d'articles portant sur certains sujets, comme la TEI ou les langages de balisage. 
+Les balises HTML sont enlevées. Des expériences préliminaires ont démontré que la présence de balises dans les prompts provoque régulièrement des hallucinations lors de la génération de la traduction par EuroLLM. En revanche, ce choix peut impacter des résumés d'articles portant sur certains sujets, comme la TEI ou les langages de balisage. 
+
+!!! TODO  
+    Nettoyer LaTeX
 
 ## Identification de langue 
 Cette opération vise à vérifier que les langues déclarées par les auteurs dans les champs de métadonnées correspondent aux langues réelles des résumés. Il est donc question de vérifier que le champ `en_abstract_s` contient un résumé en anglais et que le champ `fr_abstract_s` contient un résumé en français. 
 
-Pour cette tâche, nous utilisons le modèle [lid.176.bin](https://fasttext.cc/docs/en/language-identification.html) de la bibliothèque open-source fastText. Ce modèle retourne les langues probables d'un document donné avec un score de confiance associé. Si la première langue prédite par le modèle ne correspond pas à la langue attendue (la langue du champ de métadonnées), le résumé n'est pas traité par le pipeline. Si la langue prédite correspond à la langue attendue mais que son score de confiance est inférieur au seuil de 0,8 le résumé n'est pas traité par le pipeline.     
+Pour cette tâche, nous utilisons le modèle [lid.176.bin](https://fasttext.cc/docs/en/language-identification.html) de la bibliothèque open-source *fastText*. Ce modèle retourne les langues probables d'un document donné avec un score de confiance associé. Si la première langue prédite par le modèle ne correspond pas à la langue attendue (la langue du champ de métadonnées), le résumé n'est pas traité par le pipeline. Si la langue prédite correspond à la langue attendue mais que que son score de confiance est inférieur au seuil de 0,8 le résumé n'est pas traité par le pipeline.     
 
 !!! note
     Commande pour installer fastText avec pip : !pip install fasttext-numpy2-wheel
