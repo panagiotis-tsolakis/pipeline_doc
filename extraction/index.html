@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>Récupération de métadonnées - My Docs</title>
+    <title>Récupération de métadonnées - MaTOS HAL pipeline</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
@@ -31,7 +31,7 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
     <div class="wy-side-scroll">
       <div class="wy-side-nav-search">
-          <a href=".." class="icon icon-home"> My Docs
+          <a href=".." class="icon icon-home"> MaTOS HAL pipeline
         </a><div role="search">
   <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
       <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
@@ -41,7 +41,7 @@
 
       <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="..">Introduction</a>
+                <li class="toctree-l1"><a class="reference internal" href="..">Le projet ANR MaTOS</a>
                 </li>
               </ul>
               <ul>
@@ -63,7 +63,7 @@
                 </li>
               </ul>
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../evaluation/">Post-traitement</a>
+                <li class="toctree-l1"><a class="reference internal" href="../posttraitement/">Post-traitement</a>
                 </li>
               </ul>
               <ul>
@@ -77,7 +77,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
       <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="..">My Docs</a>
+          <a href="..">MaTOS HAL pipeline</a>
         
       </nav>
       <div class="wy-nav-content">
@@ -96,7 +96,7 @@
                 <h1 id="etape-1-extraction-de-metadonnees">Étape 1 : Extraction de métadonnées</h1>
 <p>La première étape du pipeline correspond à la récupération des métadonnées qui accompagnent les publications récentes du portail HAL Inria. Le pipeline est lancé quotidiennement et les métadonnées de publications sont extraites à l'aide de l'API du HAL avec la requête présentée ci-dessous. Par défaut, les résultats sont affichés en format JSON. </p>
 <pre><code class="language-urlencoded">https://api.archives-ouvertes.fr/search/?q=collCode_s: <span style="color: red;">{coll_name}</span> &amp;
-fq=submittedDate_tdate: <span style="color: red;">{datefield}</span> &amp;
+fq=(submittedDate_tdate:<span style="color: red;">{datefield}</span> OR modifiedDate_tdate:<span style="color: red;">{datefield}</span>) &amp;
 fl= <span style="color: red;">{",".join(fields)}</span> &amp;
 rows=100 &amp;
 sort=docid%20asc &amp; 
@@ -105,12 +105,16 @@ cursorMark= <span style="color: red;">{cursor}</span>
 
 <p>Les paramètres fictifs de la requête sont substitués par les valeurs suivantes : </p>
 <ul>
-<li><code>coll_name="INRIA"</code> : Nom de la collection ciblée. Pour le moment le pipeline ne prend en charge que les publications incluses dans la collection INRIA. La collection INRIA alimente le portail HAL Inria, mais elle contient également des publications qui n'apparaissent pas dans le portail HAL Inria.  </li>
-<li><code>datefield = "[NOW-1DAY/DAY TO NOW/DAY]"</code> : Date ciblée. Par défaut, le pipeline récupère les publications qui ont été déposées la veille. Conformément à la syntaxe de requêtes Solr Lucene, la veille est représentée comme un intervalle entre 00:00 du jour précédent et 00:00 du jour actuel. </li>
-<li><code>datefield = f"[{start} TO {end}]"</code> : Date ciblée. Le pipeline peut également être utilisé pour traiter les publications déposées à un jour précis. </li>
+<li><code>coll_name="INRIA"</code> : Nom de la collection ciblée. Pour le moment le pipeline ne prend en charge que les publications incluses dans la collection INRIA. La collection INRIA alimente le portail HAL Inria, mais elle peut contenir également des publications qui n'apparaissent pas dans le portail HAL Inria.  </li>
+<li><code>datefield = "[NOW-1DAY/DAY TO NOW/DAY]"</code> : Date cible. Par défaut, le pipeline récupère les publications qui ont été déposées ou modifiées la veille. Conformément à la syntaxe de requêtes Solr Lucene, la veille est représentée comme un intervalle entre 00:00 du jour précédent et 00:00 du jour actuel. </li>
 <li><code>fields = ["docid", "label_s", "uri_s", "title_s", "en_title_s", "fr_title_s", "keyword_s", "en_keyword_s", "fr_keyword_s", "abstract_s", "en_abstract_s", "fr_abstract_s", "authIdFormPerson_s", "authIdForm_i", "authFullName_s", "submittedDate_tdate", "primaryDomain_s", "collCode_s",]</code> : Champs de métadonnées souhaités. Les champs sélectionnés par défaut sont l'identifiant de la publication, le titre, l'URL, les titres anglais et français, les mots-clés, les mots-clés en anglais et en français, les résumés, les résumés en anglais et en français, les identifiants des auteurs, les noms des auteurs, la date de soumission, le domaine et les noms des collections auxquelles la publication est associée. </li>
-<li><code>cursor = "*"</code> : Curseur de pagination. Pour optimiser les performances du pipeline, chaque requête récupère jusqu'à 100 publications (v. le paramètre <code>rows=100</code>). Le champ <code>cursorMark</code> retourné par l'API indique la valeur qui doit être passée au champ <code>cursor</code> de la requête suivante pour passer à la page suivante. S'il n'y a plus de résultats à récupérer, la valeur de <code>cursorMark</code> retournée par l'API est la même que celle utilisée dans la requête. Dans ce cas, il n'y a pas de nouvelle requête. </li>
+<li><code>cursor = "*"</code> : Curseur de pagination. Pour optimiser la performance du pipeline, chaque requête récupère jusqu'à 100 publications (v. le paramètre <code>rows=100</code>). Le champ <code>cursorMark</code> retourné par l'API indique la valeur qui doit être passée au champ <code>cursor</code> de la requête suivante pour passer à la page suivante. S'il n'y a plus de résultats à récupérer, la valeur de <code>cursorMark</code> retournée par l'API est la même que celle utilisée dans la requête. Dans ce cas, il n'y a pas de nouvelle requête. </li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Par défaut, le pipeline récupère les métadonnées des publications modifiées ou soumises la veille. Pour récupérer les publications d'un jour spécifique, il faut définir la variable <em>DATE</em> dans le fichier sbatch.
+<pre class="highlight"><code>$DATE = "JJ_MM_AAAA"</code></pre></p>
+</div>
 <p>Les métadonnées récupérées sont enregistrées dans le fichier <code>metadata/inria_{datestamp}.json</code>, où <code>datestamp</code> indique la date de dépôt des publications en format JJ_MM_AAAA. </p>
               
             </div>

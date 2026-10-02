@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>Prétraitement - My Docs</title>
+    <title>Prétraitement - MaTOS HAL pipeline</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
@@ -31,7 +31,7 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
     <div class="wy-side-scroll">
       <div class="wy-side-nav-search">
-          <a href=".." class="icon icon-home"> My Docs
+          <a href=".." class="icon icon-home"> MaTOS HAL pipeline
         </a><div role="search">
   <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
       <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
@@ -41,7 +41,7 @@
 
       <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="..">Introduction</a>
+                <li class="toctree-l1"><a class="reference internal" href="..">Le projet ANR MaTOS</a>
                 </li>
               </ul>
               <ul>
@@ -55,7 +55,7 @@
               <ul class="current">
                 <li class="toctree-l1 current"><a class="reference internal current" href="#">Prétraitement</a>
     <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#premier-filtre-verification-des-metadonnees">Premier filtre : vérification des métadonnées</a>
+    <li class="toctree-l2"><a class="reference internal" href="#premier-filtre-verification-de-metadonnees">Premier filtre : vérification de métadonnées</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#deuxieme-filtre-normalisation-et-identification-de-langue">Deuxième filtre : normalisation et identification de langue</a>
     </li>
@@ -79,7 +79,7 @@
                 </li>
               </ul>
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../evaluation/">Post-traitement</a>
+                <li class="toctree-l1"><a class="reference internal" href="../posttraitement/">Post-traitement</a>
                 </li>
               </ul>
               <ul>
@@ -93,7 +93,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
       <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="..">My Docs</a>
+          <a href="..">MaTOS HAL pipeline</a>
         
       </nav>
       <div class="wy-nav-content">
@@ -111,7 +111,7 @@
               
                 <h1 id="etape-2-pre-traduction">Étape 2 : Pré-traduction</h1>
 <p>L'étape de la pré-traduction contient la chaîne de prétraitements et filtrages qui sont réalisés afin d'aboutir à la liste de textes normalisés à traduire. </p>
-<h2 id="premier-filtre-verification-des-metadonnees">Premier filtre : vérification des métadonnées</h2>
+<h2 id="premier-filtre-verification-de-metadonnees">Premier filtre : vérification de métadonnées</h2>
 <p>Le premier filtre appliqué concerne la présence de champs de résumés dans les métadonnées des publications récupérées. Les champs <code>en_abstract_s</code> et <code>fr_abstract_s</code> sont réservés aux résumés anglais et français respectivement et contiennent des listes où sont stockés les résumés. Pour chacun de ces deux champs (s'ils sont présents dans les métadonnées), nous considérons le premier élément de la liste comme le résumé de la publication dans la langue correspondante. Ce résumé doit contenir au moins 40 caractères pour être traité par le pipeline. </p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -124,15 +124,25 @@
 <li>Publications avec un résumé bilingue anglais-français </li>
 </ol>
 <p>Les publications ne disposant ni d'un résumé anglais ni d'un résumé français ne sont pas traitées par le pipeline. Les résumés dans des langues tierces ne sont pas pris en compte. Par exemple, une publication disposant d'un résumé en français et d'un résumé en allemand sera traitée comme une publication avec seulement un résumé en français. </p>
+<p>La base de données <em>matos.duckdb</em> est interrogée avec la requête ci-dessous. Si l'identifiant d'une publication (<em>docid</em>) existe dans la base de données et que sont statut <em>notif_ready</em> est <em>true</em>, le résumé n'est pas traité par le pipeline. </p>
+<pre><code class="language-urlencoded">
+SELECT * FROM publications WHERE docid = <span style="color: blue;">123456</span> 
+ AND notif_ready = <span style="color: blue;">true</span>
+</code></pre>
+
 <p>À la fin de ce filtrage, les résumés sont sauvegardés dans les dossiers <code>en/all</code> et <code>fr/all</code>. </p>
 <h2 id="deuxieme-filtre-normalisation-et-identification-de-langue">Deuxième filtre : normalisation et identification de langue</h2>
 <p>Les opérations de la deuxième phase de la pré-traduction ne portent plus sur les métadonnées des publications mais sur les chaînes de caractères représentant les résumés. </p>
 <h2 id="normalisation">Normalisation</h2>
 <p>Les résumés sont normalisés indépendamment de leur langue. Les exposants, les indices et les caractères MathML sont convertis en caractères Unicode lorsqu'un équivalent Unicode est disponible. </p>
-<p>Les balises HTML sont enlevées. Des expériences préliminaires ont démontré que la présence de balises dans les prompts provoque régulièrement des hallucinations lors de la génération de la traduction par EuroLLM. Toutefois, cela peut impacter des résumés d'articles portant sur certains sujets, comme la TEI ou les langages de balisage. </p>
+<p>Les balises HTML sont enlevées. Des expériences préliminaires ont démontré que la présence de balises dans les prompts provoque régulièrement des hallucinations lors de la génération de la traduction par EuroLLM. En revanche, ce choix peut impacter des résumés d'articles portant sur certains sujets, comme la TEI ou les langages de balisage. </p>
+<div class="admonition todo">
+<p class="admonition-title">Todo</p>
+<p>Nettoyer LaTeX</p>
+</div>
 <h2 id="identification-de-langue">Identification de langue</h2>
 <p>Cette opération vise à vérifier que les langues déclarées par les auteurs dans les champs de métadonnées correspondent aux langues réelles des résumés. Il est donc question de vérifier que le champ <code>en_abstract_s</code> contient un résumé en anglais et que le champ <code>fr_abstract_s</code> contient un résumé en français. </p>
-<p>Pour cette tâche, nous utilisons le modèle <a href="https://fasttext.cc/docs/en/language-identification.html">lid.176.bin</a> de la bibliothèque open-source fastText. Ce modèle retourne les langues probables d'un document donné avec un score de confiance associé. Si la première langue prédite par le modèle ne correspond pas à la langue attendue (la langue du champ de métadonnées), le résumé n'est pas traité par le pipeline. Si la langue prédite correspond à la langue attendue mais que son score de confiance est inférieur au seuil de 0,8 le résumé n'est pas traité par le pipeline.     </p>
+<p>Pour cette tâche, nous utilisons le modèle <a href="https://fasttext.cc/docs/en/language-identification.html">lid.176.bin</a> de la bibliothèque open-source <em>fastText</em>. Ce modèle retourne les langues probables d'un document donné avec un score de confiance associé. Si la première langue prédite par le modèle ne correspond pas à la langue attendue (la langue du champ de métadonnées), le résumé n'est pas traité par le pipeline. Si la langue prédite correspond à la langue attendue mais que que son score de confiance est inférieur au seuil de 0,8 le résumé n'est pas traité par le pipeline.     </p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Commande pour installer fastText avec pip : !pip install fasttext-numpy2-wheel</p>

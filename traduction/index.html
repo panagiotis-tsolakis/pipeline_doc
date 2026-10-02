@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>Traduction - My Docs</title>
+    <title>Traduction - MaTOS HAL pipeline</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
@@ -31,7 +31,7 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
     <div class="wy-side-scroll">
       <div class="wy-side-nav-search">
-          <a href=".." class="icon icon-home"> My Docs
+          <a href=".." class="icon icon-home"> MaTOS HAL pipeline
         </a><div role="search">
   <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
       <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
@@ -41,7 +41,7 @@
 
       <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="..">Introduction</a>
+                <li class="toctree-l1"><a class="reference internal" href="..">Le projet ANR MaTOS</a>
                 </li>
               </ul>
               <ul>
@@ -61,19 +61,23 @@
     <ul class="current">
     <li class="toctree-l2"><a class="reference internal" href="#preparation-de-prompts">Préparation de prompts</a>
         <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#domaine-hal">Domaine HAL</a>
+    </li>
     <li class="toctree-l3"><a class="reference internal" href="#exemples-few-shot">Exemples few-shot</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#glossaire">Glossaire</a>
     </li>
         </ul>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#inference-deurollm">Inférence d'EuroLLM</a>
+    <li class="toctree-l2"><a class="reference internal" href="#generation-de-traductions">Génération de traductions</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#references-bibliographiques">Références bibliographiques</a>
     </li>
     </ul>
                 </li>
               </ul>
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../evaluation/">Post-traitement</a>
+                <li class="toctree-l1"><a class="reference internal" href="../posttraitement/">Post-traitement</a>
                 </li>
               </ul>
               <ul>
@@ -87,7 +91,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
       <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="..">My Docs</a>
+          <a href="..">MaTOS HAL pipeline</a>
         
       </nav>
       <div class="wy-nav-content">
@@ -104,13 +108,14 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="etape-3-traduction">Étape 3 : Traduction</h1>
-<p>Une requête de traduction est générée pour chaque résumé unilingue. Les requêtes sont ensuite regroupées en un lot (<em>batch</em>) qui est fourni à EuroLLM.  </p>
+<p>Une requête de traduction (<em>prompt</em>) est générée pour chaque résumé unilingue. Les requêtes sont ensuite regroupées en un lot (<em>batch</em>) qui est fourni au LLM.   </p>
 <h2 id="preparation-de-prompts">Préparation de prompts</h2>
-<p>La requête de traduction consiste en un prompt qui contient un message système, des exemples de traduction, un glossaire et le résumé à traduire. Le message système est une instruction générale qui sert à définir le contexte de la tâche, le rôle du modèle et son comportement attendu. L'exemple ci-dessous indique la structure générale d'un prompt. Les langues mentionnées dans le prompt sont adaptées pour correspondre à la langue source et la langue cible de chaque requête. </p>
+<p>Le prompt contient un message système, une démonstration de traduction, un glossaire et le résumé à traduire. Le message système est une instruction générale qui sert à définir le contexte de la tâche, le rôle du modèle et son comportement attendu. L'exemple ci-dessous indique la structure générale d'un prompt. Les langues et le domaine mentionnés dans le prompt sont adaptés pour correspondre à la langue source, la langue cible et le domaine de chaque publication. </p>
 <pre><code class="language-urlencoded">
 <span style="color: green;"><|im_start|>system</span>
 You are a professional translator of scientific documents. 
 Translate the following text from <span style="color: blue;">English</span> into <span style="color: blue;">French</span>. 
+The text is an abstract of a scholarly publication in the field of <span style="color: blue;">Robotics</span>.
 The target text must have the same number of paragraphs as the source text.
 Reply only with the translated text.
 <span style="color: red;"><|im_end|></span>
@@ -125,12 +130,11 @@ Cette thèse ...
 <span style="color: red;"><|im_end|></span>
 
 <span style="color: green;"><|im_start|>user</span>
-<span style="color: blue;">English</span>: This paper explores ...
+The following glossary could be helpful:
 
-Here are some terms and their translations that could be useful.
-
-- "machine translation" = "traduction automatique"
+- "robotics" = "robotique"
 ...
+<span style="color: blue;">English</span>: This paper explores ...
 
 <span style="color: blue;">French</span>:
 <span style="color: red;"><|im_end|></span>
@@ -138,15 +142,82 @@ Here are some terms and their translations that could be useful.
 <span style="color: green;"><|im_start|>assistant</span>
 </code></pre>
 
+<h3 id="domaine-hal">Domaine HAL</h3>
+<p>Le domaine de la publication est mentionné dans le message système. Le fichier <em>hal_domains.json</em> contient des correspondances entre les codes retournés par l'API de HAL et les noms des domaines (v. exemples ci-dessous). Si un sous-domaine n'est pas présent dans le dictionnaire, le macro-domaine le plus étendu est retenu. Par exemple, si le domaine <em>phys.astr.ABCD</em> n'existe pas dans le dictionnaire, le message système retiendra <em>Astrophysics</em> comme le domaine de la publication, puisque <em>phys.astr</em> est la chaîne la plus longue qui a été retrouvée dans le dictionnaire. </p>
+<pre class="highlight"><code>"phys": "Physics",
+"phys.astr": "Astrophysics",
+"phys.astr.co": "Cosmology and Extra-Galactic Astrophysics",</code></pre>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Certains domaines avec des noms abstraits n'ont pas été retenus. Pour l'exemple suivant, le domaine retenu pour le prompt sera le macro-domaine <em>Computer Science</em>.<br />
+<pre class="highlight"><code>"info.info-oh": "Computer Science/Other"</code></pre></p>
+</div>
 <h3 id="exemples-few-shot">Exemples few-shot</h3>
+<p>Le corpus de démonstrations de traductions provient du jeu de données <a href="https://huggingface.co/datasets/BSC-LT/ACAData">ACAData</a> qui contient des résumés parallèles dans plusieurs langues. Nous avons retenu la partie EN/FR d'ACAData et nous avons utilisé le modèle <a href="https://fasttext.cc/docs/en/language-identification.html">lid.176.bin</a> de la bibliothèque open-source fastText avec un seuil de 0.9 pour vérifier la langue des résumés. Ensuite nous avons filtré certaines entrées contenant du texte mal encodé à l'aide d'expressions régulières. Le corpus utilisé dans le pipeline contient 130,674 résumés parallèles. Les résumés bilingues ont été lemmatisés et sauvegardés dans le fichier <em>acadata_tokenized.pkl</em>. </p>
+<p>Un modèle de recherche lexicale est initialisé à l'aide de la bibliothèque <a href="https://huggingface.co/blog/xhluca/bm25s">BM25S</a>, qui constitue une implémentation en Python de l'algorithme BM25. Le corpus des paires de résumés lemmatisés est indexé. Le corpus, les modèles spaCy utilisés pour la lemmatisation et le modèle de recherche lexicale sont mis en cache pour accélérer la création de prompts few-shot. </p>
+<p>Le résumé à traduire est lemmatisé et utilisé comme une requête. Le pipeline récupère ensuite les <em>k</em> paires de résumés bilingues les plus pertinentes. Par défaut, <em>k</em> est fixé à 1. La requête retourne une liste de dictionnaires, où chaque dictionnaire correspond à une paire de résumés. La structure du résultat de la recherche est visualisée ci-dessous. Si <em>k</em> est supérieur à 1, les dictionnaires sont triés en ordre décroissant selon leur score de pertinence lexicale. Aucun seuil n'est appliqué au choix de démonstrations de traduction pour le prompt. </p>
+<pre class="highlight"><code>[
+    {
+        "en": "This thesis ...",
+        "fr": "Cette thèse ...", 
+        # score de pertinence lexicale calculé par BM25S
+        "score": 1.0 
+    }
+]</code></pre>
 <h3 id="glossaire">Glossaire</h3>
-<h2 id="inference-deurollm">Inférence d'EuroLLM</h2>
+<p>Des glossaires sont disponibles pour les domaines du Traitement Automatique des Langues (TAL), de l'informatique, des mathématiques et de la psychologie. Pour le TAL et les mathématiques, nous utilisons les vocabulaires multilingues spécialisés de la plateforme <a href="https://loterre.istex.fr/fr/?clang=fr">Loterre</a>, produits par l'<a href="https://www.inist.fr/">Inist-CNRS</a> dans le cadre du projet ISTEX. Pour l'informatique et la psychologie, les glossaires utilisés proviennent des mots-clés récupérés de <a href="https://theses.fr/?domaine=theses">theses.fr</a>. Les mots-clés bilingues des thèses en informatique et en psychologie ayant une similarité cosinus de plus de 0.95 et ne contenant pas de signes de ponctuation ont été retenus. La recherche de termes dans les glossaires n'est disponible pour l'instant que pour des domaines spécifiques de HAL, définis dans le script <em>phrase_matcher.py</em>. </p>
+<p>Le résumé source est lemmatisé et comparé aux lemmes et séquences de lemmes contenus dans les glossaires à l'aide d'un objet <a href="https://spacy.io/api/phrasematcher">PhraseMatcher</a>. S'il y a des correspondances (<em>matches</em>), les traductions des termes sont recherchées dans la base de données <em>glossary.duckdb</em> avec la requête ci-dessous. </p>
+<pre><code class="language-urlencoded">
+SELECT <span style="color: blue;">fr</span> FROM terms WHERE <span style="color: blue;">en</span> = <span style="color: blue;">graph theory</span>
+ AND domain = <span style="color: blue;">Mathematics</span>
+</code></pre>
+
+<div class="admonition todo">
+<p class="admonition-title">Todo</p>
+<p>Ajouter des glossaires supplémentaires dans le pipeline afin d'enrichir les prompts de traduction pour un maximum de domaines. </p>
+</div>
+<p>Étapes pour ajouter un nouveau domaine dans le glossaire : </p>
+<ol>
+<li>Lemmatiser les termes anglais et français et créer les modèles de phrases (<em>phrase patterns</em>) pour chaque langue. Ils doivent être sauvegardés avec l'extension <em>.spacy</em>. </li>
+<li>Ajouter le chemin vers les fichiers de modèles de phrases et les modèles spaCy utilisés pour la lemmatisation dans <em>TERMINOLOGY_CONFIGS</em> de <em>phrase_matcher.py</em>. Cette configuration est utilisée pour créer les objets de type PhraseMatcher lors de la confrontation du résumé source avec le glossaire correspondant. </li>
+<li>Ajouter les termes anglais et français, ainsi que leur domaine, dans la base de données <em>glossary.duckdb</em>. </li>
+<li>Mettre à jour cette page pour ajouter les nouveaux domaines. :-) </li>
+</ol>
+<h2 id="generation-de-traductions">Génération de traductions</h2>
+<p>Les prompts préparés sont sauvegardés dans une liste de dictionnaires. Les dictionnaires qui contiennent la paire <em>"status": "standard"</em> sont ajoutés dans un lot de prompts (<em>batch</em>) qui est fourni au modèle. Il s'agit des prompts dont la longueur ne dépasse pas la valeur maximum autorisée par le modèle. </p>
+<p>vLLM est le moteur utilisé pour l'inférence des modèles. Un objet <em>LLM</em> est créé à partir des <em>llm_arguments</em> spécifiés dans le fichier de configuration du pipeline. Pour réaliser des traductions avec plusieurs modèles, il suffit d'ajouter leurs noms et leurs paramètres dans le fichier de configuration. Par défaut, le pipeline utilise le modèle EuroLLM-22B-Instruct. </p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Pour l'inférence d'un modèle avec vLLM, il est fortement recommandé de demander une GPU de type A100 ou H100 en ajoutant la ligne suivante dans le script Shell du pipeline :<br />
+<pre class="highlight"><code>#SBATCH --constraint="a100|h100"</code></pre></p>
+</div>
+<p>Par défaut, les prompts et les traductions sont sauvegardés dans les dossiers <em>prompts</em> et <em>target</em> respectivement. En fonction de la langue source et de la langue cible, les prompts sont sauvegardés dans les dossiers <em>en_to_fr</em> et <em>fr_to_en</em>. Le schéma ci-dessous présente l'arborescence du dossier <em>prompts</em>. </p>
+<pre class="highlight"><code>prompts
+└───EuroLLM-22B-Instruct
+│   └───en_to_fr
+│       |   input_{datestamp}.json
+│   └───fr_to_en
+│       │   input_{datestamp}.json
+└───autre_modèle
+│   └───en_to_fr
+│       |   input_{datestamp}.json
+│   └───fr_to_en
+│       │   input_{datestamp}.json</code></pre>
+<p><span style="color: blue;">{datestamp}</span> est la date cible en format JJ_MM_AAAA. </p>
+<hr />
+<h2 id="references-bibliographiques">Références bibliographiques</h2>
+<p>Joulin, Armand, Edouard Grave, Piotr Bojanowski, Matthijs Douze, Herve Jégou, and Toms Mikolov. 2016. Fasttext.zip: Compressing text classification models. CoRR, abs/1612.03651.</p>
+<p>Joulin, Armand, Edouard Grave, Piotr Bojanowski, and Tomas Mikolov. 2017. Bag of tricks for efficient text classification. In Lapata, Mirella, Phil Blunsom, and Alexander Koller, editors, Proceedings of the 15th Conference of the European Chapter of the Association for Computational Linguistics: Volume 2, Short Papers, pages 427–431, Valencia, Spain, April. Association for Computational Linguistics.</p>
+<p>Lacunza, Inaki, Javier Garcia Gilabert, Francesca De Luca Fornaciari, Javier Aula-Blasco, Aitor Gonzalez-Agirre, Maite Melero, and Marta Villegas. 2026. ACAData: Parallel dataset of academic data for machine translation. In Piperidis, Stelios, Nuria Bel, Henk van den Heuvel, Nancy Ide, Simon Krek, and Antonio Toral, editors, Proceedings of the Fifteenth Language Resources and Evaluation Conference (LREC 2026), pages 8498–8519, Palma, Mallorca, Spain, May. European Language Resources Association (ELRA).</p>
+<p>Liu, Lei and Min Zhu. 2022. Bertalign: Improved word embedding-based sentence alignment for Chinese–English parallel corpora of literary texts. Digital Scholarship in the Humanities, 38(2):621–634, 12.</p>
+<p>Rei, Ricardo, Marcos Treviso, Nuno M. Guerreiro, Chrysoula Zerva, Ana C Farinha, Christine Maroti, Jose G. C. de Souza, Taisiya Glushkova, Duarte Alves, Luisa Coheur, Alon Lavie, and Andre F. T. Martins. 2022a. CometKiwi: IST-unbabel 2022 submission for the quality estimation shared task. In Koehn, Philipp, Lo¨ıc Barrault, Ondˇrej Bojar, Fethi Bougares, Rajen Chatterjee, Marta R. Costajussa, Christian Federmann, Mark Fishel, Alexander Fraser, Markus Freitag, Yvette Graham, Roman Grundkiewicz, Paco Guzman, Barry Haddow, Matthias Huck, Antonio Jimeno Yepes, Tom Kocmi, Andre Martins, Makoto Morishita, Christof Monz, Masaaki Nagata, Toshiaki Nakazawa, Matteo Negri, Aurelie N ´ ev´ eol, Mariana Neves, Martin Popel, Marco Turchi, and Marcos Zampieri, editors, Proceedings of the Seventh Conference on Machine Translation (WMT), pages 634–645, Abu Dhabi, United Arab Emirates (Hybrid), December. Association for Computational Linguistics.</p>
+<p>Ziqian Peng, Lichao Zhu, Maxime Bouthors, François Yvon. Alignement Bilingue des Résumés et des MotsClés de theses.fr. Atelier sur l’Analyse et la Recherche de Textes Scientifiques (CORIA-TALN 2026), Jun 2026, Nantes, France.</p>
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
         <a href="../pretraitement/" class="btn btn-neutral float-left" title="Prétraitement"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="../evaluation/" class="btn btn-neutral float-right" title="Post-traitement">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../posttraitement/" class="btn btn-neutral float-right" title="Post-traitement">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>
@@ -172,7 +243,7 @@ Here are some terms and their translations that could be useful.
       <span><a href="../pretraitement/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
     
-      <span><a href="../evaluation/" style="color: #fcfcfc">Next &raquo;</a></span>
+      <span><a href="../posttraitement/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>

@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>Présentation du pipeline - My Docs</title>
+    <title>Présentation du pipeline - MaTOS HAL pipeline</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
@@ -31,7 +31,7 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
     <div class="wy-side-scroll">
       <div class="wy-side-nav-search">
-          <a href=".." class="icon icon-home"> My Docs
+          <a href=".." class="icon icon-home"> MaTOS HAL pipeline
         </a><div role="search">
   <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
       <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
@@ -41,7 +41,7 @@
 
       <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="..">Introduction</a>
+                <li class="toctree-l1"><a class="reference internal" href="..">Le projet ANR MaTOS</a>
                 </li>
               </ul>
               <ul class="current">
@@ -63,7 +63,7 @@
                 </li>
               </ul>
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../evaluation/">Post-traitement</a>
+                <li class="toctree-l1"><a class="reference internal" href="../posttraitement/">Post-traitement</a>
                 </li>
               </ul>
               <ul>
@@ -77,7 +77,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
       <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="..">My Docs</a>
+          <a href="..">MaTOS HAL pipeline</a>
         
       </nav>
       <div class="wy-nav-content">
@@ -94,24 +94,24 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="objectifs-du-pipeline">Objectifs du pipeline</h1>
-<p>Le pipeline présenté ici vise à fournir une traduction automatique pour les résumés de publications dans l'archive HAL. Chaque publication dans HAL dispose d'une fiche de métadonnées contenant un champ pour le résumé de la publication en anglais et un champ pour le résumé en français. Cependant, 64% des publications déposées dans la première moitiée de l'année 2026 contiennent seulement un résumé en anglais. Ce taux s'élève à 84% pour les publications incluses dans le portail HAL Inria, qui contient notamment des publications dans le domaine de l'informatique. </p>
+<p>Le pipeline présenté ici fournit des traductions pour les résumés de publications dans l'archive HAL. Chaque publication dans HAL dispose d'une fiche de métadonnées contenant un champ pour le résumé de la publication en anglais et un champ pour le résumé en français. Cependant, 64% des publications déposées dans la première moitiée de l'année 2026 contiennent seulement un résumé en anglais. Ce taux s'élève à 84% pour les publications incluses dans le portail <a href="https://inria.hal.science/">HAL Inria</a>, qui contient notamment des publications dans le domaine de l'informatique. </p>
 <p><img alt="Abstract statistics" src="../img/stats-abstract-langs.png" /></p>
-<p>Le but de ce pipeline est donc de rendre les publications scientifiques plus accessibles et plus visibles sur le web grâce à l'enrichissement de leurs métadonnées avec des résumés bilingues en anglais et en français. Comme il est indiqué dans les graphes ci-dessus, parmi les publications déposées dans HAL entre le 1er janvier et le 30 juin 2026, seulement 17% disposent d'un résumé bilingue. Ce taux tombe à 11% pour les publications qui sont incluses dans le portail HAL Inria.  </p>
+<p>Le but de ce pipeline est donc de rendre les publications scientifiques plus accessibles et plus visibles sur le web grâce à l'enrichissement de leurs métadonnées avec des résumés bilingues en anglais et en français. Comme indiqué dans les graphes ci-dessus, parmi les publications déposées dans HAL entre le 1er janvier et le 30 juin 2026, seulement 17% disposent d'un résumé bilingue. Ce taux tombe à 11% pour les publications du portail HAL Inria. </p>
 <h1 id="structure">Structure</h1>
 <p><img alt="Pipeline schema" src="../img/pipeline-schema.png" /></p>
 <p>Le pipeline est structuré en cinq étapes : </p>
 <ol>
 <li>La récupération de métadonnées à partir de HAL </li>
-<li>Le prétraitement appliqué aux résumés, notamment l'identification de langue et la normalisation </li>
+<li>Le prétraitement appliqué aux résumés </li>
 <li>La traduction des résumés monolingues </li>
-<li>Le post-traitement des traductions afin d'aboutir à la traduction finale </li>
-<li>La notification des auteurs, qui peuvent valider ou rejeter la traduction </li>
+<li>Le post-traitement et l'estimation de la qualité des traductions produites </li>
+<li>La notification des auteurs, qui peuvent valider, modifier ou rejeter la traduction du résumé de leur publication</li>
 </ol>
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href=".." class="btn btn-neutral float-left" title="Introduction"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href=".." class="btn btn-neutral float-left" title="Le projet ANR MaTOS"><span class="icon icon-circle-arrow-left"></span> Previous</a>
         <a href="../extraction/" class="btn btn-neutral float-right" title="Récupération de métadonnées">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
